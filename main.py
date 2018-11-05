@@ -27,7 +27,7 @@ parser.add_argument('--clip', type=float, default=0.25,
                     help='gradient clipping')
 parser.add_argument('--epochs', type=int, default=8000,
                     help='upper epoch limit')
-parser.add_argument('--batch_size', type=int, default=80, metavar='N',
+parser.add_argument('--batch_size', type=int, default=64, metavar='N',
                     help='batch size')
 parser.add_argument('--bptt', type=int, default=70,
                     help='sequence length')
@@ -73,8 +73,8 @@ torch.manual_seed(args.seed)
 if torch.cuda.is_available():
     if not args.cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
-    else:
-        torch.cuda.manual_seed(args.seed)
+    # else:
+    #     torch.cuda.manual_seed(args.seed)
 
 device = torch.device("cuda" if args.cuda else "cpu")
 
