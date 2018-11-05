@@ -96,7 +96,7 @@ import hashlib
 fn = 'corpus.{}.data'.format(hashlib.md5(args.data.encode()).hexdigest())
 if os.path.exists(fn):
     print('Loading cached dataset...')
-    corpus = torch.load(fn)gs
+    corpus = torch.load(fn)
 else:
     print('Producing dataset...')
     corpus = data.Corpus(args.data)
