@@ -76,6 +76,8 @@ if torch.cuda.is_available():
     else:
         torch.cuda.manual_seed(args.seed)
 
+device = torch.device("cuda" if args.cuda else "cpu")
+
 ###############################################################################
 # Load data
 ###############################################################################
@@ -94,7 +96,7 @@ import hashlib
 fn = 'corpus.{}.data'.format(hashlib.md5(args.data.encode()).hexdigest())
 if os.path.exists(fn):
     print('Loading cached dataset...')
-    corpus = torch.load(fn)
+    corpus = torch.load(fn)gs
 else:
     print('Producing dataset...')
     corpus = data.Corpus(args.data)
@@ -102,9 +104,9 @@ else:
 
 eval_batch_size = 10
 test_batch_size = 1
-train_data = batchify(corpus.train, args.batch_size, args)
-val_data = batchify(corpus.valid, eval_batch_size, args)
-test_data = batchify(corpus.test, test_batch_size, args)
+train_data = batchify(corpus.train, args.batch_size, args).to(device)
+val_data = batchify(corpus.valid, eval_batch_size, args).to(device)
+test_data = batchify(corpus.test, test_batch_size, args).to(device)
 
 ###############################################################################
 # Build the model
@@ -114,7 +116,7 @@ from splitcross import SplitCrossEntropyLoss
 criterion = None
 
 ntokens = len(corpus.dictionary)
-model = model.RNNModel(args.model, ntokens, args.emsize, args.nhid, args.nlayers, args.dropout, args.dropouth, args.dropouti, args.dropoute, args.wdrop, args.tied)
+model = model.RNNModel(args.model, ntokens, args.emsize, args.nhid, args.nlayers, args.dropout, args.dropouth, args.dropouti, args.dropoute, args.wdrop, args.tied).to(device)
 ###
 if args.resume:
     print('Resuming model ...')
