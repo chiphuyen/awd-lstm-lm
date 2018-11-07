@@ -1,6 +1,8 @@
 import argparse
-import time
 import math
+import sys
+import time
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -66,6 +68,11 @@ parser.add_argument('--when', nargs="+", type=int, default=[-1],
                     help='When (which epochs) to divide the learning rate by 10 - accepts multiple')
 args = parser.parse_args()
 args.tied = True
+
+if args.nhid * args.nlayers <= 256:
+    print('Total number of hidden units is too small')
+    sys.exit(0)
+
 
 # Set the random seed manually for reproducibility.
 np.random.seed(args.seed)
