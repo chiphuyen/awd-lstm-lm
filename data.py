@@ -100,11 +100,14 @@ class Dictionary(object):
         return len(self.idx2word)
 
 class Corpus(object):
-    def __init__(self, raw_path, proc_path='processed'):
+    def __init__(self, raw_path, proc_path='libri-small', by_line=False):
+        proc_path = raw_path[raw_path.rfind('/')+1:]
         os.makedirs(proc_path, exist_ok=True)
         self.dictionary = Dictionary()
-        self.DIVIDER = '==================================================================================='
+        # self.DIVIDER = '==================================================================================='
+        self.DIVIDER = '<EOB>'
         self.vocab_link = 'vocab.txt'
+        self.by_line = by_line
 
         exists = self.check_exist(proc_path)
 
@@ -113,11 +116,10 @@ class Corpus(object):
             if not raw_path:
                 raise ValueError("data_root [directory to the original data] must be specified")
             self.create_dictionary(proc_path, os.path.join(raw_path, 'train.txt'))
-            self.train = self.tokenize(raw_path, proc_path, 'train.txt')
-            self.valid = self.tokenize(raw_path, proc_path, 'valid.txt')
-            self.test = self.tokenize(raw_path, proc_path, 'test.txt')
-        else:
-            self.load_corpus(proc_path)
+
+            for mode in ['test', 'valid', 'train']:
+                self.tokenize(raw_path, proc_path, mode + '.txt')
+        self.load_corpus(proc_path)
 
     def check_exist(self, proc_path):
         paths = [proc_path, proc_path + '/vocab.txt', proc_path + '/train.ids', 
@@ -152,25 +154,28 @@ class Corpus(object):
     def tokenize(self, raw_path, proc_path, filename):
         unk_id = self.dictionary.word2idx[self.dictionary.UNK]
         out = open(os.path.join(proc_path, filename[:-3] + 'ids'), 'w')
+        
         with open(os.path.join(raw_path, filename), 'r') as f:
-            ids = []
             for line in f:
                 line = line.strip()
                 if line.strip() == self.DIVIDER:
                     words = [self.dictionary.EOB]
                 else:
                     words = line.split() + [self.dictionary.EOS]
-                for word in words:
-                    ids.append(self.dictionary.word2idx.get(word, unk_id))
-        out.write(self.list2str(ids))
+
+                line_ids = [self.dictionary.word2idx.get(word, unk_id) for word in words]
+                out.write(self.list2str(line_ids) + '\t')
         out.close()
-        return torch.LongTensor(ids)
-        # return np.asarray(ids)
 
     def load_ids(self, filename):
-        ids = open(filename, 'r').read().strip().split('\t')
-        return torch.LongTensor([int(i) for i in ids])
-        # return np.asarray([int(i) for i in ids])
+        if not self.by_line:
+            ids = open(filename, 'r').read().strip().split('\t')
+            ids = [int(i) for i in ids]
+        else:
+            lines = open(filename, 'r').readlines()
+            ids = [[int(id_) for id_ in line.strip().split('\t')] for line in lines]
+        return torch.LongTensor(ids)
+
 
     def list2str(self, list):
         return '\t'.join([str(num) for num in list])

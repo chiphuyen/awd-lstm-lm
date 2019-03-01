@@ -1,5 +1,13 @@
 # LSTM and QRNN Language Model Toolkit
 
+librispeech 
+vocab of 200,000
+
+12 -1 200000 200000
+Vocab size is: 200000. 1871827 unk tokens out of 800069004: 0.002339581949358958
+
+python main.py --save libri0
+
 This repository contains the code used for two [Salesforce Research](https://einstein.ai/) papers:
 + [Regularizing and Optimizing LSTM Language Models](https://arxiv.org/abs/1708.02182)
 + [An Analysis of Neural Language Modeling at Multiple Scales](https://arxiv.org/abs/1803.08240)

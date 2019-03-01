@@ -13,31 +13,34 @@ import model
 from utils import batchify, get_batch, repackage_hidden
 
 parser = argparse.ArgumentParser(description='PyTorch PennTreeBank RNN/LSTM Language Model')
-parser.add_argument('--data', type=str, default='data/penn/',
+parser.add_argument('--data', type=str, default='/home/chipn/data/librispeech/lm-data-small',
+# parser.add_argument('--data', type=str, default='/home/chipn/data/wikitext-103',
                     help='location of the data corpus')
+parser.add_argument('--by_line', action='store_true',
+                    help='separate the dataset by lines')
 parser.add_argument('--model', type=str, default='LSTM',
                     help='type of recurrent net (LSTM, QRNN, GRU)')
-parser.add_argument('--emsize', type=int, default=400,
+parser.add_argument('--emsize', type=int, default=320,
                     help='size of word embeddings')
-parser.add_argument('--nhid', type=int, default=1150,
+parser.add_argument('--nhid', type=int, default=1024,
                     help='number of hidden units per layer')
-parser.add_argument('--nlayers', type=int, default=3,
+parser.add_argument('--nlayers', type=int, default=4,
                     help='number of layers')
 parser.add_argument('--lr', type=float, default=30,
                     help='initial learning rate')
 parser.add_argument('--clip', type=float, default=0.25,
                     help='gradient clipping')
-parser.add_argument('--epochs', type=int, default=8000,
+parser.add_argument('--epochs', type=int, default=200,
                     help='upper epoch limit')
-parser.add_argument('--batch_size', type=int, default=64, metavar='N',
+parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size')
-parser.add_argument('--bptt', type=int, default=70,
+parser.add_argument('--bptt', type=int, default=48,
                     help='sequence length')
 parser.add_argument('--dropout', type=float, default=0.4,
                     help='dropout applied to layers (0 = no dropout)')
 parser.add_argument('--dropouth', type=float, default=0.3,
                     help='dropout for rnn layers (0 = no dropout)')
-parser.add_argument('--dropouti', type=float, default=0.65,
+parser.add_argument('--dropouti', type=float, default=0.3,
                     help='dropout for input embedding layers (0 = no dropout)')
 parser.add_argument('--dropoute', type=float, default=0.1,
                     help='dropout to remove words from embedding layer (0 = no dropout)')
@@ -49,14 +52,14 @@ parser.add_argument('--nonmono', type=int, default=5,
                     help='random seed')
 parser.add_argument('--cuda', action='store_false',
                     help='use CUDA')
-parser.add_argument('--log-interval', type=int, default=200, metavar='N',
+parser.add_argument('--log-interval', type=int, default=400, metavar='N',
                     help='report interval')
 randomhash = ''.join(str(time.time()).split('.'))
 parser.add_argument('--save', type=str,  default=randomhash+'.pt',
                     help='path to save the final model')
-parser.add_argument('--alpha', type=float, default=2,
+parser.add_argument('--alpha', type=float, default=0,
                     help='alpha L2 regularization on RNN activation (alpha = 0 means no regularization)')
-parser.add_argument('--beta', type=float, default=1,
+parser.add_argument('--beta', type=float, default=0,
                     help='beta slowness regularization applied on RNN activiation (beta = 0 means no regularization)')
 parser.add_argument('--wdecay', type=float, default=1.2e-6,
                     help='weight decay applied to all weights')
@@ -100,14 +103,17 @@ def model_load(fn):
 
 import os
 import hashlib
-fn = 'corpus.{}.data'.format(hashlib.md5(args.data.encode()).hexdigest())
-if os.path.exists(fn):
-    print('Loading cached dataset...')
-    corpus = torch.load(fn)
-else:
-    print('Producing dataset...')
-    corpus = data.Corpus(args.data)
-    torch.save(corpus, fn)
+# fn = 'corpus.{}.data'.format(hashlib.md5(args.data.encode()).hexdigest())
+# if os.path.exists(fn):
+#     print('Loading cached dataset...')
+#     corpus = torch.load(fn)
+# else:
+#     print('Producing dataset...')
+#     corpus = data.Corpus(args.data)
+#     torch.save(corpus, fn)
+
+
+corpus = data.Corpus(args.data, by_line=args.by_line)
 
 eval_batch_size = 10
 test_batch_size = 1
